@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Lirxe.Logging;
 using Lirxe.Model;
@@ -21,10 +22,12 @@ namespace Lirxe
         private RunnableAction _defaultAction;
         private Logger l;
         private PromptStore _promptStore;
+        private string[] _mentionStrings;
         
         
-        public Runner(IEnumerable<Assembly> assemblies, Logger logger = null)
+        public Runner(IEnumerable<Assembly> assemblies, Logger logger = null, string[] mention = null)
         {
+            _mentionStrings = mention ?? new string[] { };
             _promptStore = new PromptStore(this);
             l = logger ?? new ConsoleLogger();
             foreach (var assembly in assemblies)
@@ -88,6 +91,21 @@ namespace Lirxe
         private void RunToAction(ActionContext ctx)
         {
             ctx.Prompts = _promptStore;
+            var regx = new Regex(@"\[(club|public|id)206186320\|.*\]");
+            foreach (Match m in regx.Matches(ctx.Message.Text))
+            {
+                ctx.Mentioned = true;
+                ctx.Message.Text = ctx.Message.Text.Replace(m.Value+", ", "");
+                ctx.Message.Text = ctx.Message.Text.Replace(m.Value+",", "");
+                ctx.Message.Text = ctx.Message.Text.Replace(m.Value+" ", "");
+                ctx.Message.Text = ctx.Message.Text.Replace(m.Value, "");
+            }
+            foreach (var str in _mentionStrings)
+            {
+                if (!ctx.Message.Text.Contains(str)) continue;
+                ctx.Mentioned = true;
+                ctx.Message.Text = ctx.Message.Text.Replace(str, "");
+            }
             
             var matching = _actions.Where(ra => ra.Signatures.Any(s =>
                 (s.TextPattern.Match(ctx.Message.Text).Success)

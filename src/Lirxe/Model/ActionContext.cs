@@ -23,6 +23,7 @@ namespace Lirxe.Model
         public long SenderId => Message.FromId ?? (long)Message.OwnerId;
         public PromptStore Prompts { get; set; }
         public long PeerId => (long) Message.PeerId;
+        public bool Mentioned { get; set; }
         
         
         public long SendMessage(string msg) =>
