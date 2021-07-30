@@ -20,24 +20,36 @@ namespace Lirxe.Model
         public VkNet.VkApi Vk { get; set; }
         public Payload Payload { get; set; }
         public Message Message { get; set; }
-        public long SenderId => Message.OwnerId ?? (long)Message.PeerId;
+        public long SenderId => Message.FromId ?? (long)Message.OwnerId;
         public PromptStore Prompts { get; set; }
         public long PeerId => (long) Message.PeerId;
         
         
-        public void SendMessage(string msg) =>
+        public long SendMessage(string msg) =>
             SendMessage(msg, PeerId, null, null);
-        public void SendSticker(int id) =>
+        public long SendSticker(int id) =>
             Vk.Messages.Send(new MessagesSendParams()
             {
                 PeerId = PeerId, RandomId = DateTime.Now.Millisecond, StickerId = (uint?)id
             });
 
-        public void SendMessage(string msg, MessageKeyboard keyboard)
+        
+        public void EditMessage(long msgId, string msg) =>
+            EditMessage(msgId, msg, null);
+        public void EditMessage(long msgId, string msg, MessageKeyboard? keyboard)
+            => EditMessage(msgId, msg, keyboard, null);
+        public void EditMessage(long msgId, string msg, MessageKeyboard? keyboard,
+            IEnumerable<MediaAttachment>? attachment) => Vk.Messages.Edit(new MessageEditParams()
+        {
+            Message = msg, PeerId = PeerId, Keyboard = keyboard, Attachments = attachment, MessageId = msgId
+        });
+        
+
+        public long SendMessage(string msg, MessageKeyboard keyboard)
             => SendMessage(msg, PeerId, keyboard, null);
-        public void SendMessage(string msg, MessageKeyboard keyboard, IEnumerable<MediaAttachment> attachment)
+        public long SendMessage(string msg, MessageKeyboard keyboard, IEnumerable<MediaAttachment> attachment)
             => SendMessage(msg, PeerId, keyboard, attachment);
-        public void SendMessage(string msg, long peerId, MessageKeyboard? keyboard, IEnumerable<MediaAttachment>? attachment)
+        public long SendMessage(string msg, long peerId, MessageKeyboard? keyboard, IEnumerable<MediaAttachment>? attachment)
             =>
                 Vk.Messages.Send(new MessagesSendParams()
                 {

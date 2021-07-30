@@ -9,6 +9,9 @@
         <Description>Lirxe is a easy and lightweight way to build your chat bot application</Description>
         <AssemblyVersion>1</AssemblyVersion>
         <FileVersion>1</FileVersion>
+        <PackageProjectUrl>https://github.com/el3ctr1c1ty/lixrevk</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/el3ctr1c1ty/lixrevk</RepositoryUrl>
+        <PackageTags>vk, bot, vknet, vk net, chatbot, chat, vkontakte </PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
