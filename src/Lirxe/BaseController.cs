@@ -30,14 +30,14 @@ namespace Lirxe
         public void Prompt(Action<Message, PromptProvider> handler, string cancelKey = null, System.Action onCancel = null)
             => Context.Prompts.Prompt(handler, Context.SenderId, cancelKey, onCancel);
         
-        public void Send(string msg) => Context.SendMessage(msg);
-        public void SendSticker(int id) => Context.SendSticker(id);
+        public long Send(string msg) => Context.SendMessage(msg);
+        public long SendSticker(int id) => Context.SendSticker(id);
 
-        public void SendMessage(string msg, MessageKeyboard keyboard) => Context.SendMessage(msg, keyboard);
-        public void SendMessage(string msg, MessageKeyboard keyboard, IEnumerable<MediaAttachment> attachment)
+        public long SendMessage(string msg, MessageKeyboard keyboard) => Context.SendMessage(msg, keyboard);
+        public long SendMessage(string msg, MessageKeyboard keyboard, IEnumerable<MediaAttachment> attachment)
             => Context.SendMessage(msg, keyboard, attachment);
 
-        public void SendMessage(string msg, long peerId, MessageKeyboard? keyboard,
+        public long SendMessage(string msg, long peerId, MessageKeyboard? keyboard,
             IEnumerable<MediaAttachment>? attachment)
             => Context.SendMessage(msg, peerId, keyboard, attachment);
     }

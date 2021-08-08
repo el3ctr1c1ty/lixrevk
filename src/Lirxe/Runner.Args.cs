@@ -16,7 +16,11 @@ namespace Lirxe
                     foreach (var param in method.GetParameters())
                     {
                         if (payload.Store.ContainsKey(param.Name))
-                            p.Add(payload.Store[param.Name]);
+                        {
+                            if (param.ParameterType == typeof(int) && payload.Store[param.Name] is long)
+                                p.Add(int.Parse(payload.Store[param.Name].ToString()));
+                            else p.Add(payload.Store[param.Name]);
+                        }
                         else
                         {
                             if (param.HasDefaultValue) p.Add(param.HasDefaultValue);

@@ -11,13 +11,14 @@ namespace Lirxe.Model
 
     public static class MessageExtension
     {
-        public static bool IsPrivate(this Message msg) => msg.OwnerId == msg.PeerId;
+        public static bool IsPrivate(this Message msg) => msg.FromId == msg.PeerId;
         public static bool IsGroup(this Message msg) => !IsPrivate(msg);
     }
     public class ActionContext
     {
         public User Sender { get; set; }
         public VkNet.VkApi Vk { get; set; }
+        public ulong GroupId { get; set; }
         public Payload Payload { get; set; }
         public Message Message { get; set; }
         public long SenderId => Message.FromId ?? (long)Message.OwnerId;

@@ -20,11 +20,11 @@ namespace Lirxe
                 if (argsMatches.Any())
                 {
                     var name = pattern[argsMatches.First().Index..];
-                    if (name.Last() == ' ') name = name[..^1] + "( )?";
+
                     pattern = pattern.Replace(pattern.Substring(argsMatches.First().Index), name);
                     
                     foreach (Match argMatch in argsMatches)
-                        pattern = pattern.Replace(argMatch.Value, $"(?<{argMatch.Groups["name"].Value}>.*)?");
+                        pattern = pattern.Replace(argMatch.Value, $"(?<{argMatch.Groups["name"].Value}>.*)");
                 }
 
                 return new Regex(pattern);

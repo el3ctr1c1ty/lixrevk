@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 using Lirxe.Logging;
 using Lirxe.Model;
 
@@ -62,6 +63,8 @@ namespace Lirxe
 
         public void Run(ActionContext ctx)
         {
+            CheckMention(ctx);
+            
             var prompts = _promptStore.Prompts.Where(p => p.Owner == ctx.SenderId && p.Valid(ctx.Message.Payload)).ToArray();
             if (prompts.Any()) RunToPrompt(ctx, prompts.First());
             
@@ -69,6 +72,7 @@ namespace Lirxe
         }
         private void RunToPrompt(ActionContext ctx, PromptInfo prompt)
         {
+            
             if (prompt.CancelKey != null && ctx.Message.Text == prompt.CancelKey)
             {
                 prompt.Provider.Cancel();
@@ -76,22 +80,22 @@ namespace Lirxe
                 if (prompt.OnCancel != null)
                 {
                     l.sj($"Executing cancel handler of prompt [{prompt.Id:N}]");
-                    prompt.OnCancel.Invoke();
+                    Task.Run(()=>prompt.OnCancel.Invoke());
                     l.fj($"Executed cancel handler of prompt [{prompt.Id:N}]     \n");
                 }
             }
             else
             {
                 l.sj($"Executing prompt [{prompt.Id:N}]");
-                prompt.Handler.Invoke(ctx.Message, prompt.Provider);
+                Task.Run(()=>prompt.Handler.Invoke(ctx.Message, prompt.Provider));
                 if (!prompt.IsButton) prompt.Provider.Cancel();
                 l.fj($"Executed prompt [{prompt.Id:N}]     \n");
             }
         }
-        private void RunToAction(ActionContext ctx)
+
+        private void CheckMention(ActionContext ctx)
         {
-            ctx.Prompts = _promptStore;
-            var regx = new Regex(@"\[(club|public|id)206186320\|.*\]");
+            var regx = new Regex($@"\[(club|public){ctx.GroupId}\|.*\]");
             foreach (Match m in regx.Matches(ctx.Message.Text))
             {
                 ctx.Mentioned = true;
@@ -99,13 +103,18 @@ namespace Lirxe
                 ctx.Message.Text = ctx.Message.Text.Replace(m.Value+",", "");
                 ctx.Message.Text = ctx.Message.Text.Replace(m.Value+" ", "");
                 ctx.Message.Text = ctx.Message.Text.Replace(m.Value, "");
-            }
+            } ctx.Message.Text = HttpUtility.HtmlDecode(ctx.Message.Text);
             foreach (var str in _mentionStrings)
             {
                 if (!ctx.Message.Text.Contains(str)) continue;
                 ctx.Mentioned = true;
                 ctx.Message.Text = ctx.Message.Text.Replace(str, "");
             }
+        }
+        private void RunToAction(ActionContext ctx)
+        {
+            ctx.Prompts = _promptStore;
+            
             
             var matching = _actions.Where(ra => ra.Signatures.Any(s =>
                 (s.TextPattern.Match(ctx.Message.Text).Success)

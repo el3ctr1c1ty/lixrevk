@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Lirxe.Logging;
 using Lirxe.Model;
 using VkNet;
 using VkNet.Enums.SafetyEnums;
 using VkNet.Model;
+using VkNet.Model.GroupUpdate;
 using VkNet.Model.RequestParams;
 
 namespace Lirxe
@@ -19,6 +23,10 @@ namespace Lirxe
 
         public override event RequestEvent Request;
         public override event EventHandler OnRun;
+
+        public delegate void UpdateEvent(GroupUpdate upd);
+
+        public event UpdateEvent Update;
 
         protected override void Run(){
             
@@ -37,17 +45,29 @@ namespace Lirxe
                         if (poll?.Updates == null) continue;
                         foreach (var a in poll.Updates)
                         {
-                            if (a.Type != GroupUpdateType.MessageNew) continue;
+                            if (a.Type != GroupUpdateType.MessageNew)
+                            {
+                                Task.Run(() => Update?.Invoke(a));
+                                continue;
+                            }
+                            
+
                             var ac = new ActionContext
                             {
-                                Message = a.MessageNew.Message, Sender = new User {Id = (long) a.MessageNew.Message.PeerId},
-                                Vk = _client
+                                Message = a.MessageNew.Message,
+                                Sender = new User {Id = (long) a.MessageNew.Message.PeerId},
+                                Vk = _client, GroupId = _id
                             };
                             if (!string.IsNullOrEmpty(a.MessageNew.Message.Payload))
                                 ac.Payload = Payload.Deserialize(a.MessageNew.Message.Payload);
                             Request?.Invoke(ac);
                         }
-                        
+
+                    }
+                    catch (VkNet.Exception.LongPollKeyExpiredException)
+                    {
+                        l.w("Get new longpool key...");
+                        s = _client.Groups.GetLongPollServer(_id);
                     }
                     catch (Exception e)
                     {

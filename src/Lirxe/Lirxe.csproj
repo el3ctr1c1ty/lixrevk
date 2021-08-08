@@ -4,7 +4,7 @@
         <TargetFramework>net5.0</TargetFramework>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageId>Lirxe.VK</PackageId>
-        <PackageVersion>1.0.1</PackageVersion>
+        <PackageVersion>1.0.4</PackageVersion>
         <Title>Lirxe.VK</Title>
         <Description>Lirxe is a easy and lightweight way to build your chat bot application</Description>
         <AssemblyVersion>1</AssemblyVersion>
